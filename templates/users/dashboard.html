@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LeetCode Leaderboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #f0f2f5, #dfe9f3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .dashboard {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .dashboard h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+            font-size: 2.2rem;
+        }
+
+        .dashboard a {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #ff4b5c;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .dashboard a:hover {
+            background: #e0434e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        th {
+            background-color: #0077ff;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f5f9fc;
+        }
+
+        tr:hover {
+            background-color: #e0f0ff;
+        }
+
+        img {
+            border-radius: 50%;
+            border: 2px solid #0077ff;
+            height: 50px;
+            width: 50px;
+            object-fit: cover;
+        }
+
+        .legend-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+            border-radius: 3px;
+        }
+
+        .easy { background: #4caf50; }
+        .medium { background: #ff9800; }
+        .hard { background: #f44336; }
+
+        canvas {
+            max-width: 120px;
+            margin: auto;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                margin-bottom: 20px;
+                border-bottom: 1px solid #ccc;
+                background: #fff;
+                padding: 10px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                font-weight: bold;
+                text-align: left;
+                color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <h1>LeetCode Leaderboard</h1>
+    <a href="/logout/">Logout</a>
+
+    <!-- Legend -->
+    <div class="legend-box">
+        <div class="legend-item"><span class="legend-color easy"></span>Easy</div>
+        <div class="legend-item"><span class="legend-color medium"></span>Medium</div>
+        <div class="legend-item"><span class="legend-color hard"></span>Hard</div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Profile</th>
+            <th>Username</th>
+            <th>College</th>
+            <th>LeetCode ID</th>
+            <th>Chart</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in user_stats %}
+        <tr>
+            <td data-label="Profile">
+                {% if item.user.profile_image %}
+                    <img src="{{ item.user.profile_image.url }}" />
+                {% else %}
+                    <img src="https://via.placeholder.com/50x50.png?text=User" />
+                {% endif %}
+            </td>
+            <td data-label="Username">{{ item.user.username }}</td>
+            <td data-label="College">{{ item.user.college }}</td>
+            <td data-label="LeetCode ID">{{ item.user.leetcode_id }}</td>
+            <td data-label="Chart">
+                <canvas id="chart-{{ forloop.counter }}"></canvas>
+                <script>
+                    const ctx{{ forloop.counter }} = document.getElementById('chart-{{ forloop.counter }}');
+                    new Chart(ctx{{ forloop.counter }}, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Easy', 'Medium', 'Hard'],
+                            datasets: [{
+                                data: [{{ item.easySolved }}, {{ item.mediumSolved }}, {{ item.hardSolved }}],
+                                backgroundColor: ['#4caf50', '#ff9800', '#f44336'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                datalabels: {
+                                    color: '#fff',
+                                    font: { weight: 'bold' },
+                                    formatter: (value) => value
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+                </script>
+            </td>
+            <td data-label="Total">{{ item.totalSolved }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
