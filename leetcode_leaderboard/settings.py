@@ -10,7 +10,10 @@ SECRET_KEY = 'django-insecure-7j_e4+c@u!=d_ltv-6c2c!_wj7o)yx9=^-%zgtu@$fd!8pf#d+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+if os.environ.get('RENDER'):
+    ALLOWED_HOSTS.append('leetcode-leader-1.onrender.com')
 
 # Application definition
 INSTALLED_APPS = [
