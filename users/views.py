@@ -38,9 +38,10 @@ def fetch_leetcode_stats(username):
     except:
         return {}
 
+
 @login_required
 def dashboard_view(request):
-    users = CustomUser.objects.all()
+    users = CustomUser.objects.filter(is_superuser=False)  # Exclude superusers
     user_stats = []
     for user in users:
         stats = fetch_leetcode_stats(user.leetcode_id)
@@ -53,3 +54,4 @@ def dashboard_view(request):
         })
     user_stats.sort(key=lambda x: x['totalSolved'], reverse=True)
     return render(request, 'users/dashboard.html', {'user_stats': user_stats})
+
